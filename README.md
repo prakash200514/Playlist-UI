@@ -1,8 +1,8 @@
-# Symphony | Premium Music Player
+# Symphony - Premium Music Player
 
 A sleek, modern, and responsive music player built using pure HTML, CSS, and JavaScript.
 
-## 🌟 Features
+🌟 Features
 
 - **Glassmorphic Design**: A futuristic UI with backdrop-blur effects and vibrant gradients.
 - **Audio Controls**: Full playback support including Play/Pause, Skip, Repeat, and Shuffle.
@@ -10,7 +10,7 @@ A sleek, modern, and responsive music player built using pure HTML, CSS, and Jav
 - **Visual Feedback**: Real-time progress tracking, animated audio bars, and smooth transitions.
 - **Responsive Layout**: Designed to look great on both desktop and mobile devices.
 
-## 🛠️ Built With
+🛠️ Built With
 
 - **HTML5**: For semantic structure.
 - **CSS3**: For advanced styling (Glassmorphism, Gradients, Animations).
