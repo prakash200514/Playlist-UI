@@ -3,42 +3,42 @@ const tracks = [
         title: "Neon Horizon",
         artist: "Digital Dreams",
         cover: "assets/images/cover1.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        url: "https://cdn.pixabay.com/audio/2022/10/30/audio_2448375630.mp3",
         category: "english"
     },
     {
         title: "Coastal Breeze",
         artist: "Solace Waves",
         cover: "assets/images/cover2.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+        url: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc52675d.mp3",
         category: "english"
     },
     {
         title: "Thunder Strike",
         artist: "Volt Catalyst",
         cover: "assets/images/cover3.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+        url: "https://cdn.pixabay.com/audio/2021/11/23/audio_0971216f91.mp3",
         category: "english"
     },
     {
-        title: "Vaathi Coming",
-        artist: "Anirudh",
+        title: "Indian Soul",
+        artist: "Sitar Fusion",
         cover: "assets/images/cover1.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
+        url: "https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a7391b.mp3",
         category: "tamil"
     },
     {
-        title: "Enjoy Enjaami",
-        artist: "Dhee ft. Arivu",
+        title: "Spirit of Madras",
+        artist: "Ethnic Beats",
         cover: "assets/images/cover2.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3",
+        url: "https://cdn.pixabay.com/audio/2023/06/11/audio_51a31b4657.mp3",
         category: "tamil"
     },
     {
-        title: "Kutty Story",
-        artist: "Thalapathy Vijay",
+        title: "Temple Rhythms",
+        artist: "Traditional Flow",
         cover: "assets/images/cover3.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3",
+        url: "https://cdn.pixabay.com/audio/2024/02/09/audio_606a5996cc.mp3",
         category: "tamil"
     }
 ];
@@ -83,12 +83,28 @@ function loadTrack(index) {
     albumArt.style.backgroundImage = `url(${track.cover})`;
     audio.src = track.url;
     
+    // Sync Category Tab
+    if (activeCategory !== track.category) {
+        activeCategory = track.category;
+        syncTabUI();
+    }
+    
     // Reset progress
     progressSlider.value = 0;
     progressFill.style.width = '0%';
     currentTimeEl.innerText = "0:00";
     
     updateActiveTrack();
+}
+
+function syncTabUI() {
+    tabBtns.forEach(btn => {
+        if (btn.getAttribute('data-category') === activeCategory) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
 }
 
 function togglePlay() {
@@ -114,13 +130,15 @@ function pauseTrack() {
 }
 
 function playNext() {
-    // Determine the list of tracks to pick from
     const filteredTracks = tracks.map((t, i) => ({...t, originalIndex: i}))
                                  .filter(t => t.category === activeCategory);
     
     let currentFilteredIndex = filteredTracks.findIndex(t => t.originalIndex === currentTrackIndex);
     
-    if (isShuffle) {
+    if (currentFilteredIndex === -1) {
+        // If we switched category but didn't play a track yet, just pick the first from active
+        currentTrackIndex = filteredTracks[0].originalIndex;
+    } else if (isShuffle) {
         let newFilteredIndex;
         do {
             newFilteredIndex = Math.floor(Math.random() * filteredTracks.length);
@@ -141,8 +159,12 @@ function playPrev() {
     
     let currentFilteredIndex = filteredTracks.findIndex(t => t.originalIndex === currentTrackIndex);
     
-    let prevFilteredIndex = (currentFilteredIndex - 1 + filteredTracks.length) % filteredTracks.length;
-    currentTrackIndex = filteredTracks[prevFilteredIndex].originalIndex;
+    if (currentFilteredIndex === -1) {
+        currentTrackIndex = filteredTracks[0].originalIndex;
+    } else {
+        let prevFilteredIndex = (currentFilteredIndex - 1 + filteredTracks.length) % filteredTracks.length;
+        currentTrackIndex = filteredTracks[prevFilteredIndex].originalIndex;
+    }
     
     loadTrack(currentTrackIndex);
     playTrack();
@@ -174,7 +196,6 @@ function updateVolume() {
 function renderPlaylist() {
     playlistItems.innerHTML = '';
     
-    // Filter tracks by active category
     tracks.forEach((track, index) => {
         if (track.category !== activeCategory) return;
         
@@ -198,13 +219,8 @@ function renderPlaylist() {
 }
 
 function updateActiveTrack() {
-    const items = document.querySelectorAll('.track-item');
-    // Note: Since we filter, we need to match by title or something more robust if indices shift, 
-    // but here index is still absolute to the tracks array.
-    items.forEach((item) => {
-        // Find the index by matching content or just re-render
-    });
-    renderPlaylist(); // Easier to just re-render on active change for now
+    // Re-rendering is the simplest way to ensure only the active track in the current tab is highlighted
+    renderPlaylist();
 }
 
 // Event Listeners
