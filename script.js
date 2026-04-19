@@ -21,24 +21,24 @@ const tracks = [
         category: "english"
     },
     {
-        title: "Indian Soul",
-        artist: "Sitar Fusion",
+        title: "Arabic Kuthu",
+        artist: "Anirudh Ravichander",
         cover: "assets/images/cover1.png",
-        url: "https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a7391b.mp3",
+        url: "https://cdn.pixabay.com/audio/2024/02/09/audio_606a5996cc.mp3",
         category: "tamil"
     },
     {
-        title: "Spirit of Madras",
-        artist: "Ethnic Beats",
+        title: "Enjoy Enjaami",
+        artist: "Dhee ft. Arivu",
         cover: "assets/images/cover2.png",
         url: "https://cdn.pixabay.com/audio/2023/06/11/audio_51a31b4657.mp3",
         category: "tamil"
     },
     {
-        title: "Temple Rhythms",
-        artist: "Traditional Flow",
+        title: "Tum Tum",
+        artist: "Thaman S",
         cover: "assets/images/cover3.png",
-        url: "https://cdn.pixabay.com/audio/2024/02/09/audio_606a5996cc.mp3",
+        url: "https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a7391b.mp3",
         category: "tamil"
     }
 ];
