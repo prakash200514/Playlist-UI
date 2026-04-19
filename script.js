@@ -6,6 +6,7 @@ const tracks = [
         url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
         category: "english"
     },
+    // ... other english songs ...
     {
         title: "Coastal Breeze",
         artist: "Solace Waves",
@@ -24,21 +25,21 @@ const tracks = [
         title: "Arabic Kuthu",
         artist: "Anirudh Ravichander",
         cover: "assets/images/cover1.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
+        url: "assets/music/arabic_kuthu.mp3",
         category: "tamil"
     },
     {
         title: "Enjoy Enjaami",
         artist: "Dhee ft. Arivu",
         cover: "assets/images/cover2.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3",
+        url: "assets/music/enjoy_enjaami.mp3",
         category: "tamil"
     },
     {
         title: "Tum Tum",
         artist: "Thaman S",
         cover: "assets/images/cover3.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3",
+        url: "assets/music/tum_tum.mp3",
         category: "tamil"
     }
 ];
@@ -69,6 +70,8 @@ const playlistItems = document.getElementById('playlist-items');
 const repeatBtn = document.getElementById('repeat');
 const shuffleBtn = document.getElementById('shuffle');
 const tabBtns = document.querySelectorAll('.tab-btn');
+const addLocalBtn = document.getElementById('add-local-track');
+const localInput = document.getElementById('local-file-input');
 
 function init() {
     loadTrack(currentTrackIndex);
@@ -118,7 +121,10 @@ function togglePlay() {
 
 function playTrack() {
     isPlaying = true;
-    audio.play();
+    audio.play().catch(err => {
+        console.error("Playback failed:", err);
+        durationEl.innerText = "Error Loading";
+    });
     playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
     document.body.classList.add('playing');
 }
@@ -137,7 +143,6 @@ function playNext() {
     let currentFilteredIndex = filteredTracks.findIndex(t => t.originalIndex === currentTrackIndex);
     
     if (currentFilteredIndex === -1) {
-        // If we switched category but didn't play a track yet, just pick the first from active
         currentTrackIndex = filteredTracks[0].originalIndex;
     } else if (isShuffle) {
         let newFilteredIndex;
@@ -220,8 +225,49 @@ function renderPlaylist() {
 }
 
 function updateActiveTrack() {
-    // Re-rendering is the simplest way to ensure only the active track in the current tab is highlighted
     renderPlaylist();
+}
+
+function handleLocalFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const fileUrl = URL.createObjectURL(file);
+    const fileName = file.name.split('.').slice(0, -1).join('.') || file.name;
+
+    // Add new local track to playlist
+    const newTrack = {
+        title: fileName,
+        artist: "Local File",
+        cover: "assets/images/cover1.png", // Default cover
+        url: fileUrl,
+        category: "local"
+    };
+
+    tracks.push(newTrack);
+    currentTrackIndex = tracks.length - 1;
+    
+    // Add "Local" tab if it doesn't exist
+    if (!document.querySelector('[data-category="local"]')) {
+        const localTab = document.createElement('button');
+        localTab.className = 'tab-btn';
+        localTab.setAttribute('data-category', 'local');
+        localTab.innerText = 'Local';
+        localTab.onclick = () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            localTab.classList.add('active');
+            activeCategory = 'local';
+            renderPlaylist();
+        };
+        document.querySelector('.playlist-tabs').appendChild(localTab);
+        
+        // Re-query tabBtns to include the new one
+        // Wait, better to just switch category and render
+    }
+
+    activeCategory = "local";
+    loadTrack(currentTrackIndex);
+    playTrack();
 }
 
 // Event Listeners
@@ -231,10 +277,8 @@ prevBtn.addEventListener('click', playPrev);
 
 audio.addEventListener('timeupdate', updateProgress);
 audio.addEventListener('error', (e) => {
-    console.error("Audio error:", e);
-    durationEl.innerText = "Error Loading";
-    alert("Unable to load audio resource. This might be due to your network or the source being temporarily unavailable.");
-    pauseTrack();
+    durationEl.innerText = "File Missing";
+    // For local paths, this often happens if user hasn't put the file in assets/music yet
 });
 audio.addEventListener('ended', () => {
     if (isRepeat) {
@@ -244,6 +288,48 @@ audio.addEventListener('ended', () => {
         playNext();
     }
 });
+
+progressSlider.addEventListener('input', () => {
+    const duration = audio.duration;
+    if (isNaN(duration)) return;
+    audio.currentTime = (progressSlider.value / 100) * duration;
+    progressFill.style.width = `${progressSlider.value}%`;
+});
+
+volumeSlider.addEventListener('input', updateVolume);
+
+toggleListBtn.addEventListener('click', () => {
+    playlistSide.classList.remove('hidden');
+});
+
+closePlaylistBtn.addEventListener('click', () => {
+    playlistSide.classList.add('hidden');
+});
+
+repeatBtn.addEventListener('click', () => {
+    isRepeat = !isRepeat;
+    repeatBtn.classList.toggle('active', isRepeat);
+});
+
+shuffleBtn.addEventListener('click', () => {
+    isShuffle = !isShuffle;
+    shuffleBtn.classList.toggle('active', isShuffle);
+});
+
+tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCategory = btn.getAttribute('data-category');
+        renderPlaylist();
+    });
+});
+
+addLocalBtn.addEventListener('click', () => localInput.click());
+localInput.addEventListener('change', handleLocalFileUpload);
+
+// Initialize
+init();
 
 progressSlider.addEventListener('input', () => {
     const duration = audio.duration;

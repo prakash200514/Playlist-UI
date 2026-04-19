@@ -321,6 +321,32 @@ input[type="range"]:active::-webkit-slider-thumb {
     margin-bottom: 20px;
 }
 
+.local-upload-container {
+    margin-bottom: 20px;
+}
+
+.add-btn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed var(--glass-border);
+    color: var(--text-main);
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.add-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
 .tab-btn {
     background: var(--glass-border);
     border: 1px solid transparent;
