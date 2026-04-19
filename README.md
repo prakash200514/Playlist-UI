@@ -33,6 +33,3 @@ A sleek, modern, and responsive music player built using pure HTML, CSS, and Jav
 - `assets/`: 
   - `images/`: Generated album art covers.
 
----
-
-*Made with ✨ by Antigravity*
