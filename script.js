@@ -3,23 +3,48 @@ const tracks = [
         title: "Neon Horizon",
         artist: "Digital Dreams",
         cover: "assets/images/cover1.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        category: "english"
     },
     {
         title: "Coastal Breeze",
         artist: "Solace Waves",
         cover: "assets/images/cover2.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+        category: "english"
     },
     {
         title: "Thunder Strike",
         artist: "Volt Catalyst",
         cover: "assets/images/cover3.png",
-        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+        category: "english"
+    },
+    {
+        title: "Vaathi Coming",
+        artist: "Anirudh",
+        cover: "assets/images/cover1.png",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
+        category: "tamil"
+    },
+    {
+        title: "Enjoy Enjaami",
+        artist: "Dhee ft. Arivu",
+        cover: "assets/images/cover2.png",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3",
+        category: "tamil"
+    },
+    {
+        title: "Kutty Story",
+        artist: "Thalapathy Vijay",
+        cover: "assets/images/cover3.png",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3",
+        category: "tamil"
     }
 ];
 
 let currentTrackIndex = 0;
+let activeCategory = "english";
 let isPlaying = false;
 let isRepeat = false;
 let isShuffle = false;
@@ -43,6 +68,7 @@ const closePlaylistBtn = document.getElementById('close-playlist');
 const playlistItems = document.getElementById('playlist-items');
 const repeatBtn = document.getElementById('repeat');
 const shuffleBtn = document.getElementById('shuffle');
+const tabBtns = document.querySelectorAll('.tab-btn');
 
 function init() {
     loadTrack(currentTrackIndex);
@@ -88,21 +114,36 @@ function pauseTrack() {
 }
 
 function playNext() {
+    // Determine the list of tracks to pick from
+    const filteredTracks = tracks.map((t, i) => ({...t, originalIndex: i}))
+                                 .filter(t => t.category === activeCategory);
+    
+    let currentFilteredIndex = filteredTracks.findIndex(t => t.originalIndex === currentTrackIndex);
+    
     if (isShuffle) {
-        let newIndex;
+        let newFilteredIndex;
         do {
-            newIndex = Math.floor(Math.random() * tracks.length);
-        } while (newIndex === currentTrackIndex);
-        currentTrackIndex = newIndex;
+            newFilteredIndex = Math.floor(Math.random() * filteredTracks.length);
+        } while (newFilteredIndex === currentFilteredIndex && filteredTracks.length > 1);
+        currentTrackIndex = filteredTracks[newFilteredIndex].originalIndex;
     } else {
-        currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+        let nextFilteredIndex = (currentFilteredIndex + 1) % filteredTracks.length;
+        currentTrackIndex = filteredTracks[nextFilteredIndex].originalIndex;
     }
+    
     loadTrack(currentTrackIndex);
     playTrack();
 }
 
 function playPrev() {
-    currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+    const filteredTracks = tracks.map((t, i) => ({...t, originalIndex: i}))
+                                 .filter(t => t.category === activeCategory);
+    
+    let currentFilteredIndex = filteredTracks.findIndex(t => t.originalIndex === currentTrackIndex);
+    
+    let prevFilteredIndex = (currentFilteredIndex - 1 + filteredTracks.length) % filteredTracks.length;
+    currentTrackIndex = filteredTracks[prevFilteredIndex].originalIndex;
+    
     loadTrack(currentTrackIndex);
     playTrack();
 }
@@ -119,13 +160,6 @@ function updateProgress() {
     durationEl.innerText = formatTime(duration);
 }
 
-function setProgress(e) {
-    const width = this.clientWidth;
-    const clickX = e.offsetX;
-    const duration = audio.duration;
-    audio.currentTime = (progressSlider.value / 100) * duration;
-}
-
 function formatTime(time) {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -139,7 +173,11 @@ function updateVolume() {
 
 function renderPlaylist() {
     playlistItems.innerHTML = '';
+    
+    // Filter tracks by active category
     tracks.forEach((track, index) => {
+        if (track.category !== activeCategory) return;
+        
         const item = document.createElement('div');
         item.className = `track-item ${index === currentTrackIndex ? 'active' : ''}`;
         item.innerHTML = `
@@ -154,7 +192,6 @@ function renderPlaylist() {
             currentTrackIndex = index;
             loadTrack(currentTrackIndex);
             playTrack();
-            playlistSide.classList.add('hidden');
         };
         playlistItems.appendChild(item);
     });
@@ -162,13 +199,12 @@ function renderPlaylist() {
 
 function updateActiveTrack() {
     const items = document.querySelectorAll('.track-item');
-    items.forEach((item, index) => {
-        if (index === currentTrackIndex) {
-            item.classList.add('active');
-        } else {
-            item.classList.remove('active');
-        }
+    // Note: Since we filter, we need to match by title or something more robust if indices shift, 
+    // but here index is still absolute to the tracks array.
+    items.forEach((item) => {
+        // Find the index by matching content or just re-render
     });
+    renderPlaylist(); // Easier to just re-render on active change for now
 }
 
 // Event Listeners
@@ -211,6 +247,15 @@ repeatBtn.addEventListener('click', () => {
 shuffleBtn.addEventListener('click', () => {
     isShuffle = !isShuffle;
     shuffleBtn.classList.toggle('active', isShuffle);
+});
+
+tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCategory = btn.getAttribute('data-category');
+        renderPlaylist();
+    });
 });
 
 // Initialize
