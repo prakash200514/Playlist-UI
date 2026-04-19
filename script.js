@@ -3,42 +3,42 @@ const tracks = [
         title: "Neon Horizon",
         artist: "Digital Dreams",
         cover: "assets/images/cover1.png",
-        url: "https://cdn.pixabay.com/audio/2022/10/30/audio_2448375630.mp3",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
         category: "english"
     },
     {
         title: "Coastal Breeze",
         artist: "Solace Waves",
         cover: "assets/images/cover2.png",
-        url: "https://cdn.pixabay.com/audio/2022/11/22/audio_febc52675d.mp3",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
         category: "english"
     },
     {
         title: "Thunder Strike",
         artist: "Volt Catalyst",
         cover: "assets/images/cover3.png",
-        url: "https://cdn.pixabay.com/audio/2021/11/23/audio_0971216f91.mp3",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
         category: "english"
     },
     {
         title: "Arabic Kuthu",
         artist: "Anirudh Ravichander",
         cover: "assets/images/cover1.png",
-        url: "https://cdn.pixabay.com/audio/2024/02/09/audio_606a5996cc.mp3",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
         category: "tamil"
     },
     {
         title: "Enjoy Enjaami",
         artist: "Dhee ft. Arivu",
         cover: "assets/images/cover2.png",
-        url: "https://cdn.pixabay.com/audio/2023/06/11/audio_51a31b4657.mp3",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3",
         category: "tamil"
     },
     {
         title: "Tum Tum",
         artist: "Thaman S",
         cover: "assets/images/cover3.png",
-        url: "https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a7391b.mp3",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3",
         category: "tamil"
     }
 ];
@@ -93,6 +93,7 @@ function loadTrack(index) {
     progressSlider.value = 0;
     progressFill.style.width = '0%';
     currentTimeEl.innerText = "0:00";
+    durationEl.innerText = "Loading...";
     
     updateActiveTrack();
 }
@@ -229,6 +230,12 @@ nextBtn.addEventListener('click', playNext);
 prevBtn.addEventListener('click', playPrev);
 
 audio.addEventListener('timeupdate', updateProgress);
+audio.addEventListener('error', (e) => {
+    console.error("Audio error:", e);
+    durationEl.innerText = "Error Loading";
+    alert("Unable to load audio resource. This might be due to your network or the source being temporarily unavailable.");
+    pauseTrack();
+});
 audio.addEventListener('ended', () => {
     if (isRepeat) {
         audio.currentTime = 0;
