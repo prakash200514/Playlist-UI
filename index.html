@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
 <body>
     <div class="glass-background"></div>
     <main class="player-container">
@@ -20,7 +19,10 @@
                 <i class="fas fa-headphones-alt"></i>
                 <span>Symphony</span>
             </div>
-            <button id="toggle-list" class="icon-btn"><i class="fas fa-list-ul"></i></button>
+            <div class="header-controls">
+                <button id="theme-toggle" class="icon-btn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+                <button id="toggle-list" class="icon-btn" title="Playlist"><i class="fas fa-list-ul"></i></button>
+            </div>
         </header>
 
         <section class="main-player">

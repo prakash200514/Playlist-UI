@@ -8,6 +8,17 @@
     --text-dim: #a0a0a0;
     --accent-gradient: linear-gradient(135deg, #7d5fff 0%, #ff4dff 100%);
     --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --panel-bg: #111115;
+}
+
+body.light-theme {
+    --bg-dark: #f0f2f5;
+    --glass-bg: rgba(255, 255, 255, 0.6);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --text-main: #1a1b1e;
+    --text-dim: #5f6368;
+    --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    --panel-bg: #ffffff;
 }
 
 * {
@@ -37,6 +48,12 @@ body {
     background: radial-gradient(circle at 20% 30%, #2c1a4d 0%, transparent 40%),
                 radial-gradient(circle at 80% 70%, #4d1a3d 0%, transparent 40%);
     filter: blur(100px);
+    transition: background 0.5s ease;
+}
+
+body.light-theme .glass-background {
+    background: radial-gradient(circle at 20% 30%, #d1c4e9 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, #f8bbd0 0%, transparent 40%);
 }
 
 .player-container {
@@ -57,6 +74,11 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+}
+
+.header-controls {
+    display: flex;
+    gap: 10px;
 }
 
 .brand {
@@ -291,10 +313,10 @@ input[type="range"]:active::-webkit-slider-thumb {
     right: 0;
     width: 100%;
     height: 100%;
-    background: #111115;
+    background: var(--panel-bg);
     z-index: 10;
     padding: 30px;
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s ease;
     display: flex;
     flex-direction: column;
 }

@@ -72,11 +72,28 @@ const shuffleBtn = document.getElementById('shuffle');
 const tabBtns = document.querySelectorAll('.tab-btn');
 const addLocalBtn = document.getElementById('add-local-track');
 const localInput = document.getElementById('local-file-input');
+const themeToggleBtn = document.getElementById('theme-toggle');
 
 function init() {
     loadTrack(currentTrackIndex);
     renderPlaylist();
     updateVolume();
+    initTheme();
+}
+
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    themeToggleBtn.innerHTML = isLight ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
 }
 
 function loadTrack(index) {
@@ -336,6 +353,8 @@ tabBtns.forEach(btn => {
         renderPlaylist();
     });
 });
+
+themeToggleBtn.addEventListener('click', toggleTheme);
 
 addLocalBtn.addEventListener('click', () => localInput.click());
 localInput.addEventListener('change', handleLocalFileUpload);
