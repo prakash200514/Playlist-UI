@@ -207,18 +207,30 @@ function renderPlaylist() {
         
         const item = document.createElement('div');
         item.className = `track-item ${index === currentTrackIndex ? 'active' : ''}`;
+        
+        const isCurrentAndPlaying = (index === currentTrackIndex && isPlaying);
+        const statusIcon = isCurrentAndPlaying ? 'fa-pause' : 'fa-play';
+        const volumeIcon = isCurrentAndPlaying ? '<i class="fas fa-volume-up"></i>' : '';
+
         item.innerHTML = `
             <div class="item-thumb" style="background-image: url(${track.cover})"></div>
             <div class="item-info">
                 <h4>${track.title}</h4>
                 <p>${track.artist}</p>
             </div>
-            <div class="item-status"><i class="fas fa-volume-up"></i></div>
+            <div class="item-status">
+                ${volumeIcon}
+                <i class="fas ${statusIcon} list-play-btn"></i>
+            </div>
         `;
         item.onclick = () => {
-            currentTrackIndex = index;
-            loadTrack(currentTrackIndex);
-            playTrack();
+            if (index === currentTrackIndex) {
+                togglePlay();
+            } else {
+                currentTrackIndex = index;
+                loadTrack(currentTrackIndex);
+                playTrack();
+            }
         };
         playlistItems.appendChild(item);
     });
@@ -267,7 +279,7 @@ function handleLocalFileUpload(event) {
 
     activeCategory = "local";
     loadTrack(currentTrackIndex);
-    playTrack();
+    // Removed playTrack() to prevent auto-play as requested
 }
 
 // Event Listeners

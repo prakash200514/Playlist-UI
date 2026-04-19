@@ -431,12 +431,23 @@ input[type="range"]:active::-webkit-slider-thumb {
 
 .item-status {
     color: var(--primary-color);
-    font-size: 0.8rem;
-    display: none;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.track-item.active .item-status {
-    display: block;
+.list-play-btn {
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.track-item:hover .list-play-btn {
+    opacity: 1;
+}
+
+.track-item.active .list-play-btn {
+    opacity: 1;
 }
 
 /* Responsive */
