@@ -472,11 +472,116 @@ input[type="range"]:active::-webkit-slider-thumb {
     opacity: 1;
 }
 
-/* Responsive */
-@media (max-width: 450px) {
-    .player-container {
-        width: 100%;
-        height: 100vh;
-        border-radius: 0;
-    }
+/* Modal Styling */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.modal.hidden {
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    background: var(--panel-bg);
+    border: 1px solid var(--glass-border);
+    padding: 30px;
+    border-radius: 25px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal:not(.hidden) .modal-content {
+    transform: scale(1);
+}
+
+.modal-content h3 {
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+}
+
+.modal-content p {
+    color: var(--text-dim);
+    margin-bottom: 25px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.modal-btn i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.modal-btn:hover {
+    background: var(--accent-gradient);
+    border-color: transparent;
+    color: white;
+    transform: translateY(-5px);
+}
+
+.modal-btn:hover i {
+    color: white;
+}
+
+.cancel-link {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: underline;
+}
+
+.cancel-link:hover {
+    color: var(--text-main);
+}
+
+.delete-track-btn {
+    opacity: 0;
+    color: var(--text-dim);
+    transition: all 0.2s ease;
+    margin-left: 10px;
+}
+
+.track-item:hover .delete-track-btn {
+    opacity: 0.6;
+}
+
+.delete-track-btn:hover {
+    color: #ff4d4d !important;
+    opacity: 1 !important;
 }

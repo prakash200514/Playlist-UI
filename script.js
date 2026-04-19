@@ -50,6 +50,11 @@ let isPlaying = false;
 let isRepeat = false;
 let isShuffle = false;
 
+// Custom Track Persistence (IndexedDB)
+let db;
+const DB_NAME = "SymphonyDB";
+const STORE_NAME = "customTracks";
+
 const audio = new Audio();
 const playPauseBtn = document.getElementById('play-pause');
 const prevBtn = document.getElementById('prev');
@@ -73,12 +78,83 @@ const tabBtns = document.querySelectorAll('.tab-btn');
 const addLocalBtn = document.getElementById('add-local-track');
 const localInput = document.getElementById('local-file-input');
 const themeToggleBtn = document.getElementById('theme-toggle');
+const categoryModal = document.getElementById('category-modal');
+const modalSongName = document.getElementById('new-song-name');
+const modalBtns = document.querySelectorAll('.modal-btn');
+const cancelModalBtn = document.getElementById('cancel-modal');
+
+let pendingFile = null;
 
 function init() {
-    loadTrack(currentTrackIndex);
-    renderPlaylist();
-    updateVolume();
-    initTheme();
+    initDB().then(() => {
+        loadSavedTracks().then(() => {
+            loadTrack(currentTrackIndex);
+            renderPlaylist();
+            updateVolume();
+            initTheme();
+        });
+    });
+}
+
+function initDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = (e) => {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
+            }
+        };
+        request.onsuccess = (e) => {
+            db = e.target.result;
+            resolve();
+        };
+        request.onerror = (e) => reject(e);
+    });
+}
+
+async function loadSavedTracks() {
+    return new Promise((resolve) => {
+        const transaction = db.transaction([STORE_NAME], "readonly");
+        const store = transaction.objectStore(transaction.objectStoreNames[0]);
+        const request = store.getAll();
+        
+        request.onsuccess = (e) => {
+            const savedTracks = e.target.result;
+            savedTracks.forEach(track => {
+                // Construct a track object with a persistent Blob URL
+                const blobUrl = URL.createObjectURL(track.blob);
+                tracks.push({
+                    id: track.id,
+                    title: track.title,
+                    artist: track.artist,
+                    cover: "assets/images/cover1.png",
+                    url: blobUrl,
+                    category: track.category,
+                    isCustom: true
+                });
+            });
+            resolve();
+        };
+    });
+}
+
+async function saveTrackToDB(trackData) {
+    return new Promise((resolve) => {
+        const transaction = db.transaction([STORE_NAME], "readwrite");
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.add(trackData);
+        request.onsuccess = (e) => resolve(e.target.result);
+    });
+}
+
+async function deleteTrackFromDB(id) {
+    return new Promise((resolve) => {
+        const transaction = db.transaction([STORE_NAME], "readwrite");
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.delete(id);
+        request.onsuccess = () => resolve();
+    });
 }
 
 function initTheme() {
@@ -229,6 +305,10 @@ function renderPlaylist() {
         const statusIcon = isCurrentAndPlaying ? 'fa-pause' : 'fa-play';
         const volumeIcon = isCurrentAndPlaying ? '<i class="fas fa-volume-up"></i>' : '';
 
+        // Add delete button for custom tracks
+        const deleteBtn = track.isCustom ? 
+            `<i class="fas fa-trash-alt delete-track-btn" onclick="handleDeleteTrack(event, ${index})"></i>` : '';
+
         item.innerHTML = `
             <div class="item-thumb" style="background-image: url(${track.cover})"></div>
             <div class="item-info">
@@ -238,9 +318,11 @@ function renderPlaylist() {
             <div class="item-status">
                 ${volumeIcon}
                 <i class="fas ${statusIcon} list-play-btn"></i>
+                ${deleteBtn}
             </div>
         `;
-        item.onclick = () => {
+        item.onclick = (e) => {
+            if (e.target.classList.contains('delete-track-btn')) return;
             if (index === currentTrackIndex) {
                 togglePlay();
             } else {
@@ -253,50 +335,65 @@ function renderPlaylist() {
     });
 }
 
-function updateActiveTrack() {
-    renderPlaylist();
+async function handleDeleteTrack(e, index) {
+    e.stopPropagation();
+    const track = tracks[index];
+    if (confirm(`Delete "${track.title}"?`)) {
+        if (track.isCustom) {
+            await deleteTrackFromDB(track.id);
+        }
+        tracks.splice(index, 1);
+        if (currentTrackIndex >= tracks.length) currentTrackIndex = 0;
+        renderPlaylist();
+    }
 }
 
 function handleLocalFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const fileUrl = URL.createObjectURL(file);
+    pendingFile = file;
     const fileName = file.name.split('.').slice(0, -1).join('.') || file.name;
+    modalSongName.innerText = fileName;
+    categoryModal.classList.remove('hidden');
+    
+    // Reset input
+    localInput.value = '';
+}
 
-    // Add new local track to playlist
-    const newTrack = {
+async function finalizeAddSong(category) {
+    if (!pendingFile) return;
+
+    const file = pendingFile;
+    const fileName = file.name.split('.').slice(0, -1).join('.') || file.name;
+    const blobUrl = URL.createObjectURL(file);
+
+    // Save to DB
+    const id = await saveTrackToDB({
         title: fileName,
         artist: "Local File",
-        cover: "assets/images/cover1.png", // Default cover
-        url: fileUrl,
-        category: "local"
+        category: category,
+        blob: file
+    });
+
+    const newTrack = {
+        id: id,
+        title: fileName,
+        artist: "Local File",
+        cover: "assets/images/cover1.png",
+        url: blobUrl,
+        category: category,
+        isCustom: true
     };
 
     tracks.push(newTrack);
+    activeCategory = category;
     currentTrackIndex = tracks.length - 1;
     
-    // Add "Local" tab if it doesn't exist
-    if (!document.querySelector('[data-category="local"]')) {
-        const localTab = document.createElement('button');
-        localTab.className = 'tab-btn';
-        localTab.setAttribute('data-category', 'local');
-        localTab.innerText = 'Local';
-        localTab.onclick = () => {
-            tabBtns.forEach(b => b.classList.remove('active'));
-            localTab.classList.add('active');
-            activeCategory = 'local';
-            renderPlaylist();
-        };
-        document.querySelector('.playlist-tabs').appendChild(localTab);
-        
-        // Re-query tabBtns to include the new one
-        // Wait, better to just switch category and render
-    }
-
-    activeCategory = "local";
     loadTrack(currentTrackIndex);
-    // Removed playTrack() to prevent auto-play as requested
+    renderPlaylist();
+    categoryModal.classList.add('hidden');
+    pendingFile = null;
 }
 
 // Event Listeners
@@ -307,7 +404,6 @@ prevBtn.addEventListener('click', playPrev);
 audio.addEventListener('timeupdate', updateProgress);
 audio.addEventListener('error', (e) => {
     durationEl.innerText = "File Missing";
-    // For local paths, this often happens if user hasn't put the file in assets/music yet
 });
 audio.addEventListener('ended', () => {
     if (isRepeat) {
@@ -358,6 +454,15 @@ themeToggleBtn.addEventListener('click', toggleTheme);
 
 addLocalBtn.addEventListener('click', () => localInput.click());
 localInput.addEventListener('change', handleLocalFileUpload);
+
+modalBtns.forEach(btn => {
+    btn.onclick = () => finalizeAddSong(btn.getAttribute('data-choice'));
+});
+
+cancelModalBtn.onclick = () => {
+    categoryModal.classList.add('hidden');
+    pendingFile = null;
+};
 
 // Initialize
 init();

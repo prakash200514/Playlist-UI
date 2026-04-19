@@ -93,6 +93,22 @@
         </aside>
     </main>
 
+    <div id="category-modal" class="modal hidden">
+        <div class="modal-content glass-effect">
+            <h3>Select Category</h3>
+            <p>Where should we add "<span id="new-song-name">Song</span>"?</p>
+            <div class="modal-actions">
+                <button class="modal-btn" data-choice="english">
+                    <i class="fas fa-globe"></i> English
+                </button>
+                <button class="modal-btn" data-choice="tamil">
+                    <i class="fas fa-music"></i> Tamil
+                </button>
+            </div>
+            <button id="cancel-modal" class="cancel-link">Cancel</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
